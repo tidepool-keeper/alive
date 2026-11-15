@@ -79,7 +79,8 @@ jobs:
 
           echo "wakes=$WAKES journal=$JOURNAL last=$LAST utc=$UTC load=$LOAD"
 
-          git clone "https://$GH_TOKEN@github.com/tidepool-keeper/alive.git" "$RUNNER_TEMP/alive"
+          # 用 x-access-token 形式（GitHub 要求 token 作为密码，用户名固定）
+          git clone "https://x-access-token:$GH_TOKEN@github.com/tidepool-keeper/alive.git" "$RUNNER_TEMP/alive"
           cd "$RUNNER_TEMP/alive"
 
           cat > README.md <<REOF
