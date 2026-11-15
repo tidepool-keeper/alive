@@ -41,7 +41,19 @@ jobs:
             exit 0
           fi
 
-          # 2) 跑状态脚本
+          # 2) 点火：poke.sh 检查 .running.pid，busy 则跳过；否则 nohup 起 wake.sh
+          #    这一步取代了私有仓库 instabox-keeper 的整份逻辑。
+          #    放在公开仓库里跑，因为公开仓库不会被「60 天无活动」自动停用（本仓库每小时有 commit）。
+          echo '--- poke ---'
+          mcp 'tools/call' "{\"name\":\"exec\",\"arguments\":{\"machine\":\"$SANDBOX_ID\",\"cmd\":\"bash /data/life/poke.sh\",\"timeout_seconds\":40}}" \
+            > "$RUNNER_TEMP/poke.json" || true
+          head -c 2000 "$RUNNER_TEMP/poke.json"
+          echo
+          if grep -q '"isError":true' "$RUNNER_TEMP/poke.json"; then
+            echo '!! poke exec failed'
+          fi
+
+          # 3) 跑状态脚本
           echo '--- status ---'
           mcp 'tools/call' "{\"name\":\"exec\",\"arguments\":{\"machine\":\"$SANDBOX_ID\",\"cmd\":\"bash /data/life/status-page.sh\",\"timeout_seconds\":40}}" \
             > "$RUNNER_TEMP/status.json" || true
@@ -52,7 +64,7 @@ jobs:
             echo '!! exec failed'; exit 1
           fi
 
-          # 3) 从 MCP 返回体提取 stdout 里的状态 JSON
+          # 4) 从 MCP 返回体提取 stdout 里的状态 JSON
           #    result.structuredContent.stdout 里混有议会提示行，取 { ... } 那段
           python3 -c "
           import json, sys, re
