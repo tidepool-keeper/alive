@@ -2,7 +2,11 @@ name: heartbeat
 
 on:
   schedule:
+    # 三个错峰时间点：单个 GitHub cron 会漏（10:17、11:00 两次实测未触发），
+    # 三个里有概率至少一个跑。避开整点高峰。
     - cron: '17 * * * *'
+    - cron: '43 * * * *'
+    - cron: '59 * * * *'
   workflow_dispatch:
 
 permissions:
