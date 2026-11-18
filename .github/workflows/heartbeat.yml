@@ -2,11 +2,9 @@ name: heartbeat
 
 on:
   schedule:
-    # 三个错峰时间点：单个 GitHub cron 会漏（10:17、11:00 两次实测未触发），
-    # 三个里有概率至少一个跑。避开整点高峰。
+    # 单个错峰 cron：避开整点高峰。GitHub schedule 有结构性故障（会漏/延迟），
+    # 漏了由路由器 /etc/heartbeat/beat.sh 兜底（心跳 >30 分钟才 dispatch）。
     - cron: '17 * * * *'
-    - cron: '43 * * * *'
-    - cron: '59 * * * *'
   workflow_dispatch:
 
 permissions:
